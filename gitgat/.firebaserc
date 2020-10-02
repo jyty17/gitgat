@@ -1,0 +1,11 @@
+{
+  "targets": {
+    "chitchat-6dc4c": {
+      "hosting": {
+        "gitgat": [
+          "chitchat-6dc4c"
+        ]
+      }
+    }
+  }
+}
