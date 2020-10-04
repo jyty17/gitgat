@@ -20,14 +20,19 @@ export class ChatService {
 
   get() {
     return this.afStore
-      .collection('messages')
-      .doc()
+      .collection('messages', ref => ref.limit(100).orderBy('createdAt', 'asc'))
+      // .doc()
       .snapshotChanges()
       .pipe(
-        map( doc => {
-          return { id: doc.payload.id, ...doc.payload.data() };
-        }),
-        first()
+        map( actions => {
+          return actions.map( action => { 
+            const data: Object = action.payload.doc.data();
+            const id = action.payload.doc.id;
+
+            // console.log("Chat Service", { id, ...data });
+            return { id, ...data };
+          })
+        })
       );
   }
 
@@ -41,46 +46,57 @@ export class ChatService {
       messages: []
     }
 
-    const docRef = await this.afStore.collection('chats').add(data);
+    const docRef = await this.afStore.collection('messages').add(data);
     return 
   }
 
-  async sendMessage(chatId, content) {
-    const { uid } = this.auth.getUser();
-
+  async sendMessage(content) {
+    // const { uid } = await this.auth.getUser();
+    console.log(await this.auth.getUser());
+    const uid = "t";
+    // console.log(content);
     const data = {
       uid,
-      content,
-      createdAt: Date.now(),
+      'message': content,
+      createdAt: firestore.FieldValue.serverTimestamp(),
     };
-
+    console.log(firestore.FieldValue.arrayUnion(data), data);
     if (uid) {
-      const ref = this.afStore.collection('chats').doc(chatId);
-      return ref.update({
-        message: firestore.FieldValue.arrayUnion(data)
-      });
+      const ref = this.afStore.collection('messages');
+      return ref.doc(this.afStore.createId()).set(data);
     }
   }
 
+  // gets messages respective to users in respective chats
   joinUsers(chat$: Observable<any>) {
     let chat;
-    const joinKeys = {}
-
+    const joinKeys = {};
+    
     return chat$.pipe(
       switchMap( c => {
         chat = c;
-        const uid = Array.from(new Set(c.messages.map( v => v.uid )));
-
+        // console.log("c", c);
+        const uids = Array.from(new Set(c.map( v => v.uid )));
+        console.log("valid1", uids);
         //Firestore User Doc Reads
-        const userDocs = uid.map( u => 
+        const userDocs = uids.map( u => 
           this.afStore.doc(`users/${u}`).valueChanges()
         );
-
-        return userDocs.length ? combineLatest(userDocs) : of([])
+        console.log("userDocs: Length, docs, combineLatest", userDocs.length, userDocs);
+        return userDocs.length ? userDocs : of([])
+        // return userDocs.length ? combineLatest(userDocs) : of([]);
       }),
+      // map(a => console.log("check", a)),
       map(arr => {
+        console.log("arr", arr, typeof(arr));
+        arr.forEach(v => console.log("what is in arr", v));
         arr.forEach( v => (joinKeys[(<any>v).uid] = v));
-        chat.messages = chat.messages.map( v => {
+  
+        joinKeys["t"] = chat[0];
+        console.log("keys", chat, joinKeys);
+        
+        chat = chat.map( v => {
+          // console.log(v, "joinKeys", joinKeys);
           return { ...v, user: joinKeys[v.uid]}
         })
       

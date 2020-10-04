@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/auth';
-import { auth } from 'firebase/app';
+// import { AngularFireAuth } from '@angular/fire/auth';
+// import { auth } from 'firebase/app';
+
+import { AuthService } from './auth.service';
+import { ChatService } from './chat.service';
 
 @Component({
   selector: 'app-root',
@@ -8,8 +11,8 @@ import { auth } from 'firebase/app';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'gitgat';
+  title = 'Mega Fire Chat';
 
-  constructor() { }
+  constructor(public auth: AuthService, public chat: ChatService) { }
   
 }

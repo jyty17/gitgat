@@ -11,14 +11,14 @@
 
     <div class="chat">
 
-        <div class="msg" *ngFor="let msg of chat.messages; trackBy: trackByCreated">
-
+        <div class="msg" *ngFor="let msg of chat; trackBy: trackByCreated">
+            <!-- {{ msg|json }} -->
             <div class="user">
                 <img [src]="msg.user?.photoURL">
-                <div>{{ msg.user?.displayName }}</span></div>
+                <div><span>{{ msg.user?.displayName }}</span></div>
             </div>
 
-            <p>{{ msg.content }}</p>
+            <p>{{ msg.message }}</p>
 
         </div>
 

@@ -20,7 +20,7 @@ export class AuthService {
     this.user$ = this.afAuth.authState.pipe(
       switchMap( user => {
         if (user) {
-          return this.afStore.doc<any>(`user/${user.uid}`).valueChanges();
+          return this.afStore.doc<any>(`users/${user.uid}`).valueChanges();
         } else {
           return of(null)
         }
@@ -43,7 +43,7 @@ export class AuthService {
   }
 
   private updateUserData({ uid, email, displayName, photoURL }) {
-    const userRef: AngularFirestoreDocument<any> = this.afStore.doc(`user/${uid}`);
+    const userRef: AngularFirestoreDocument<any> = this.afStore.doc(`users/${uid}`);
 
     const data = {
       uid,
